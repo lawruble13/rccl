@@ -46,6 +46,30 @@ def runCI =
     }
 
     buildProject(prj, formatCheck, nodes.dockerArray, compileCommand, testCommand, packageCommand)
+
+    def failedPlatforms = []
+
+    prj.projectStatus.each { platformLabel ->
+        if(platformLabel.value.containsKey("failedStage"))
+        {
+            failedPlatforms << platformLabel.key
+        }
+    }
+
+    properties([
+        parameters([
+            string(
+                name: 'failed_platforms',
+                defaultValue: failed_platforms.join(', '),
+                description: "A comma separated list of the platforms which failed last build."
+            ),
+            booleanParam(
+                name: 'rerun_failed',
+                defaultValue: false,
+                description: "Set this to skip running on any platforms which succeeded in the last completed build."
+            )
+        ])
+    ])
 }
 
 ci: { 
